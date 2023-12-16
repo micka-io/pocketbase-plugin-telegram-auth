@@ -1,3 +1,4 @@
-golang 1.20.6
+golang 1.21.5
 golangci-lint 1.54.2
 pre-commit 3.4.0
+direnv 2.33.0

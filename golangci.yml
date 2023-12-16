@@ -9,7 +9,6 @@ linters:
   disable-all: true
   enable:
     - asciicheck
-    - depguard
     - exportloopref
     - gofmt
     - goimports

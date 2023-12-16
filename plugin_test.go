@@ -224,17 +224,15 @@ func TestPlugin_GetForm(t *testing.T) {
 
 func TestPlugin_MustRegister(t *testing.T) {
 	// setup the test ApiScenario app instance
-	setupTestApp := func(options *Options) func() (*tests.TestApp, error) {
-		return func() (*tests.TestApp, error) {
-			testApp, err := tests.NewTestApp(testDataDir)
-			if err != nil {
-				return nil, err
-			}
-
-			MustRegister(testApp, options)
-
-			return testApp, nil
+	setupTestApp := func(t *testing.T, o *Options) *tests.TestApp {
+		testApp, err := tests.NewTestApp(testDataDir)
+		if err != nil {
+			t.Fatal(err)
 		}
+
+		MustRegister(testApp, o)
+
+		return testApp
 	}
 
 	scenarios := []tests.ApiScenario{
@@ -244,10 +242,12 @@ func TestPlugin_MustRegister(t *testing.T) {
 			Url:             "/api/collections/invalid_collection/auth-with-telegram",
 			ExpectedStatus:  404,
 			ExpectedContent: []string{`{"code":404,"message":"Collection not found.","data":{}}`},
-			TestAppFactory: setupTestApp(&Options{
-				CollectionKey: "invalid_collection",
-				BotToken:      "test_bot_token",
-			}),
+			TestAppFactory: func(t *testing.T) *tests.TestApp {
+				return setupTestApp(t, &Options{
+					CollectionKey: "invalid_collection",
+					BotToken:      "test_bot_token",
+				})
+			},
 		},
 		{
 			Name:            "Collection not auth type",
@@ -255,10 +255,12 @@ func TestPlugin_MustRegister(t *testing.T) {
 			Url:             "/api/collections/not_auth_collection/auth-with-telegram",
 			ExpectedStatus:  400,
 			ExpectedContent: []string{`{"code":400,"message":"Wrong collection type. not_auth_collection should be auth collection.","data":{}}`},
-			TestAppFactory: setupTestApp(&Options{
-				CollectionKey: "not_auth_collection",
-				BotToken:      "test_bot_token",
-			}),
+			TestAppFactory: func(t *testing.T) *tests.TestApp {
+				return setupTestApp(t, &Options{
+					CollectionKey: "not_auth_collection",
+					BotToken:      "test_bot_token",
+				})
+			},
 		},
 		{
 			Name:            "Data is empty",
@@ -266,10 +268,12 @@ func TestPlugin_MustRegister(t *testing.T) {
 			Url:             "/api/collections/users/auth-with-telegram",
 			ExpectedStatus:  400,
 			ExpectedContent: []string{`{"code":400,"message":"Failed to authenticate.","data":{"data":{"code":"validation_required","message":"Cannot be blank."}}}`},
-			TestAppFactory: setupTestApp(&Options{
-				CollectionKey: "users",
-				BotToken:      "test_bot_token",
-			}),
+			TestAppFactory: func(t *testing.T) *tests.TestApp {
+				return setupTestApp(t, &Options{
+					CollectionKey: "users",
+					BotToken:      "test_bot_token",
+				})
+			},
 		},
 		{
 			Name:   "Valid data user not exists",
@@ -289,10 +293,12 @@ func TestPlugin_MustRegister(t *testing.T) {
 			ExpectedStatus:  200,
 			ExpectedContent: []string{`{"meta":{"id":"1","name":"test_first_name test_last_name","username":"test_username"`},
 			ExpectedEvents:  map[string]int{"OnModelAfterCreate": 2, "OnModelBeforeCreate": 2, "OnRecordAuthRequest": 1},
-			TestAppFactory: setupTestApp(&Options{
-				CollectionKey: "users",
-				BotToken:      "test_bot_token",
-			}),
+			TestAppFactory: func(t *testing.T) *tests.TestApp {
+				return setupTestApp(t, &Options{
+					CollectionKey: "users",
+					BotToken:      "test_bot_token",
+				})
+			},
 		},
 	}
 
